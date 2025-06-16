@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste JWT Auth Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .test-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .token-display {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            margin-top: 5px;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        .storage-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Teste JWT Authentication Service</h1>
+            <p>Interface interativa para testar as funcionalidades de autenticação JWT</p>
+        </div>
+
+        <div class="storage-info">
+            <strong>💾 Dados Salvos:</strong> Suas senhas e tokens ficam salvos na memória desta página para facilitar os testes.
+        </div>
+
+        <div class="test-grid">
+            <!-- Hash Password -->
+            <div class="test-card">
+                <h3>🔒 Hash de Senha</h3>
+                <div class="form-group">
+                    <label for="passwordToHash">Senha para hash:</label>
+                    <input type="password" id="passwordToHash" placeholder="Digite uma senha">
+                </div>
+                <button class="btn" onclick="hashPassword()">Gerar Hash</button>
+                <div id="hashResult" class="result" style="display: none;"></div>
+                <button class="btn clear-btn" onclick="clearResult('hashResult')" style="display: none;">Limpar</button>
+            </div>
+
+            <!-- Verify Password -->
+            <div class="test-card">
+                <h3>✅ Verificar Senha</h3>
+                <div class="form-group">
+                    <label for="passwordToVerify">Senha original:</label>
+                    <input type="password" id="passwordToVerify" placeholder="Digite a senha">
+                </div>
+                <div class="form-group">
+                    <label for="hashToVerify">Hash para verificar:</label>
+                    <textarea id="hashToVerify" rows="3" placeholder="Cole o hash aqui"></textarea>
+                </div>
+                <button class="btn" onclick="verifyPassword()">Verificar Senha</button>
+                <div id="verifyResult" class="result" style="display: none;"></div>
+                <button class="btn clear-btn" onclick="clearResult('verifyResult')" style="display: none;">Limpar</button>
+            </div>
+
+            <!-- Create Tokens -->
+            <div class="test-card">
+                <h3>🎫 Criar Tokens</h3>
+                <div class="form-group">
+                    <label for="userId">ID do Usuário:</label>
+                    <input type="number" id="userId" placeholder="123" value="123">
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">Email:</label>
+                    <input type="email" id="userEmail" placeholder="usuario@email.com" value="usuario@teste.com">
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Role:</label>
+                    <input type="text" id="userRole" placeholder="admin" value="user">
+                </div>
+                <button class="btn" onclick="createTokens()">Gerar Tokens</button>
+                <div id="tokensResult" class="result token-display" style="display: none;"></div>
+                <button class="btn clear-btn" onclick="clearResult('tokensResult')" style="display: none;">Limpar</button>
+            </div>
+
+            <!-- Verify Token -->
+            <div class="test-card">
+                <h3>🔍 Verificar Token</h3>
+                <div class="form-group">
+                    <label for="tokenToVerify">Token JWT:</label>
+                    <textarea id="tokenToVerify" rows="4" placeholder="Cole o token aqui"></textarea>
+                </div>
+                <button class="btn" onclick="verifyToken()">Verificar Token</button>
+                <div id="tokenVerifyResult" class="result" style="display: none;"></div>
+                <button class="btn clear-btn" onclick="clearResult('tokenVerifyResult')" style="display: none;">Limpar</button>
+            </div>
+
+            <!-- Refresh Token -->
+            <div class="test-card">
+                <h3>🔄 Refresh Token</h3>
+                <div class="form-group">
+                    <label for="refreshTokenInput">Refresh Token:</label>
+                    <textarea id="refreshTokenInput" rows="4" placeholder="Cole o refresh token aqui"></textarea>
+                </div>
+                <button class="btn" onclick="refreshToken()">Gerar Novo Access Token</button>
+                <div id="refreshResult" class="result token-display" style="display: none;"></div>
+                <button class="btn clear-btn" onclick="clearResult('refreshResult')" style="display: none;">Limpar</button>
+            </div>
+
+            <!-- Config -->
+            <div class="test-card">
+                <h3>⚙️ Configurações</h3>
+                <div class="form-group">
+                    <label for="secretKey">Secret Key:</label>
+                    <input type="text" id="secretKey" placeholder="Deixe vazio para gerar automaticamente">
+                </div>
+                <div class="form-group">
+                    <label for="tokenExpireMinutes">Expiração Access Token (min):</label>
+                    <input type="number" id="tokenExpireMinutes" value="30">
+                </div>
+                <div class="form-group">
+                    <label for="refreshExpireDays">Expiração Refresh Token (dias):</label>
+                    <input type="number" id="refreshExpireDays" value="7">
+                </div>
+                <button class="btn" onclick="updateConfig()">Atualizar Configuração</button>
+                <div id="configResult" class="result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulação da classe JWTAuthService (versão simplificada para teste)
+        class MockJWTAuthService {
+            constructor(secretKey = null, accessTokenExpireMinutes = 30, refreshTokenExpireDays = 7) {
+                this.secretKey = secretKey || this.generateSecretKey();
+                this.accessTokenExpireMinutes = accessTokenExpireMinutes;
+                this.refreshTokenExpireDays = refreshTokenExpireDays;
+            }
+
+            generateSecretKey() {
+                return 'mock-secret-' + Math.random().toString(36).substring(2, 15);
+            }
+
+            async hashPassword(password) {
+                // Simulação de hash (em produção usar bcrypt)
+                const encoder = new TextEncoder();
+                const data = encoder.encode(password + this.secretKey);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return '$2b$12$' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            async verifyPassword(plainPassword, hashedPassword) {
+                const newHash = await this.hashPassword(plainPassword);
+                return newHash === hashedPassword;
+            }
+
+            createAccessToken(data) {
+                const now = new Date();
+                const expire = new Date(now.getTime() + this.accessTokenExpireMinutes * 60000);
+
+                const payload = {
+                    ...data,
+                    exp: Math.floor(expire.getTime() / 1000),
+                    iat: Math.floor(now.getTime() / 1000),
+                    type: 'access'
+                };
+
+                // Simulação de JWT (em produção usar biblioteca jwt)
+                const header = btoa(JSON.stringify({alg: 'HS256', typ: 'JWT'}));
+                const payloadEncoded = btoa(JSON.stringify(payload));
+                const signature = btoa(`mock-signature-${this.secretKey}-${payloadEncoded}`);
+
+                return `${header}.${payloadEncoded}.${signature}`;
+            }
+
+            createRefreshToken(data) {
+                const now = new Date();
+                const expire = new Date(now.getTime() + this.refreshTokenExpireDays * 24 * 60 * 60000);
+
+                const payload = {
+                    ...data,
+                    exp: Math.floor(expire.getTime() / 1000),
+                    iat: Math.floor(now.getTime() / 1000),
+                    type: 'refresh'
+                };
+
+                const header = btoa(JSON.stringify({alg: 'HS256', typ: 'JWT'}));
+                const payloadEncoded = btoa(JSON.stringify(payload));
+                const signature = btoa(`mock-signature-${this.secretKey}-${payloadEncoded}`);
+
+                return `${header}.${payloadEncoded}.${signature}`;
+            }
+
+            verifyToken(token) {
+                try {
+                    const parts = token.split('.');
+                    if (parts.length !== 3) {
+                        return {error: 'Formato de token inválido'};
+                    }
+
+                    const payload = JSON.parse(atob(parts[1]));
+                    const now = Math.floor(Date.now() / 1000);
+
+                    if (payload.exp < now) {
+                        return {error: 'Token expirado'};
+                    }
+
+                    return payload;
+                } catch (e) {
+                    return {error: 'Token inválido'};
+                }
+            }
+
+            refreshAccessToken(refreshToken) {
+                const payload = this.verifyToken(refreshToken);
+
+                if (payload.error || payload.type !== 'refresh') {
+                    return null;
+                }
+
+                const userData = {...payload};
+                delete userData.exp;
+                delete userData.iat;
+                delete userData.type;
+
+                return this.createAccessToken(userData);
+            }
+
+            createTokenPair(data) {
+                return {
+                    access_token: this.createAccessToken(data),
+                    refresh_token: this.createRefreshToken(data),
+                    token_type: 'bearer'
+                };
+            }
+        }
+
+        // Instância global do serviço
+        let authService = new MockJWTAuthService();
+
+        // Storage para dados dos testes
+        let testData = {
+            lastHash: '',
+            lastTokens: {}
+        };
+
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = content;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+
+            // Mostrar botão de limpar
+            const clearBtn = element.nextElementSibling;
+            if (clearBtn && clearBtn.classList.contains('clear-btn')) {
+                clearBtn.style.display = 'block';
+            }
+        }
+
+        function clearResult(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'none';
+            const clearBtn = element.nextElementSibling;
+            if (clearBtn && clearBtn.classList.contains('clear-btn')) {
+                clearBtn.style.display = 'none';
+            }
+        }
+
+        async function hashPassword() {
+            const password = document.getElementById('passwordToHash').value;
+            if (!password) {
+                showResult('hashResult', 'Por favor, digite uma senha!', 'error');
+                return;
+            }
+
+            try {
+                const hash = await authService.hashPassword(password);
+                testData.lastHash = hash;
+
+                showResult('hashResult',
+                    `✅ Hash gerado com sucesso!\n\nSenha: ${password}\nHash: ${hash}\n\n💾 Hash salvo para testes de verificação.`,
+                    'success'
+                );
+
+                // Auto-preencher campo de verificação
+                document.getElementById('hashToVerify').value = hash;
+                document.getElementById('passwordToVerify').value = password;
+            } catch (error) {
+                showResult('hashResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function verifyPassword() {
+            const password = document.getElementById('passwordToVerify').value;
+            const hash = document.getElementById('hashToVerify').value;
+
+            if (!password || !hash) {
+                showResult('verifyResult', 'Por favor, preencha senha e hash!', 'error');
+                return;
+            }
+
+            try {
+                const isValid = await authService.verifyPassword(password, hash);
+
+                if (isValid) {
+                    showResult('verifyResult',
+                        `✅ Senha VÁLIDA!\n\nA senha "${password}" corresponde ao hash fornecido.`,
+                        'success'
+                    );
+                } else {
+                    showResult('verifyResult',
+                        `❌ Senha INVÁLIDA!\n\nA senha "${password}" NÃO corresponde ao hash fornecido.`,
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('verifyResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function createTokens() {
+            const userId = document.getElementById('userId').value;
+            const email = document.getElementById('userEmail').value;
+            const role = document.getElementById('userRole').value;
+
+            if (!userId || !email) {
+                showResult('tokensResult', 'Por favor, preencha pelo menos ID e email!', 'error');
+                return;
+            }
+
+            try {
+                const userData = {
+                    user_id: parseInt(userId),
+                    email: email,
+                    role: role
+                };
+
+                const tokens = authService.createTokenPair(userData);
+                testData.lastTokens = tokens;
+
+                showResult('tokensResult',
+                    `✅ Tokens gerados com sucesso!\n\nDados do usuário:\n${JSON.stringify(userData, null, 2)}\n\nAccess Token:\n${tokens.access_token}\n\nRefresh Token:\n${tokens.refresh_token}\n\nTipo: ${tokens.token_type}\n\n💾 Tokens salvos para outros testes.`,
+                    'success'
+                );
+
+                // Auto-preencher campos de verificação
+                document.getElementById('tokenToVerify').value = tokens.access_token;
+                document.getElementById('refreshTokenInput').value = tokens.refresh_token;
+
+            } catch (error) {
+                showResult('tokensResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function verifyToken() {
+            const token = document.getElementById('tokenToVerify').value;
+
+            if (!token) {
+                showResult('tokenVerifyResult', 'Por favor, cole um token!', 'error');
+                return;
+            }
+
+            try {
+                const payload = authService.verifyToken(token);
+
+                if (payload.error) {
+                    showResult('tokenVerifyResult',
+                        `❌ Token inválido!\n\nErro: ${payload.error}`,
+                        'error'
+                    );
+                } else {
+                    const expDate = new Date(payload.exp * 1000);
+                    const iatDate = new Date(payload.iat * 1000);
+
+                    showResult('tokenVerifyResult',
+                        `✅ Token VÁLIDO!\n\nPayload decodificado:\n${JSON.stringify(payload, null, 2)}\n\nCriado em: ${iatDate.toLocaleString('pt-BR')}\nExpira em: ${expDate.toLocaleString('pt-BR')}\nTipo: ${payload.type}`,
+                        'success'
+                    );
+                }
+            } catch (error) {
+                showResult('tokenVerifyResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function refreshToken() {
+            const refreshToken = document.getElementById('refreshTokenInput').value;
+
+            if (!refreshToken) {
+                showResult('refreshResult', 'Por favor, cole um refresh token!', 'error');
+                return;
+            }
+
+            try {
+                const newAccessToken = authService.refreshAccessToken(refreshToken);
+
+                if (!newAccessToken) {
+                    showResult('refreshResult',
+                        `❌ Falha ao gerar novo token!\n\nRefresh token pode estar expirado ou inválido.`,
+                        'error'
+                    );
+                } else {
+                    showResult('refreshResult',
+                        `✅ Novo access token gerado!\n\nNovo Access Token:\n${newAccessToken}\n\n💾 Você pode usar este token para autenticação.`,
+                        'success'
+                    );
+
+                    // Auto-preencher campo de verificação
+                    document.getElementById('tokenToVerify').value = newAccessToken;
+                }
+            } catch (error) {
+                showResult('refreshResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function updateConfig() {
+            const secretKey = document.getElementById('secretKey').value;
+            const expireMinutes = parseInt(document.getElementById('tokenExpireMinutes').value);
+            const refreshDays = parseInt(document.getElementById('refreshExpireDays').value);
+
+            try {
+                authService = new MockJWTAuthService(
+                    secretKey || null,
+                    expireMinutes || 30,
+                    refreshDays || 7
+                );
+
+                showResult('configResult',
+                    `✅ Configuração atualizada!\n\nSecret Key: ${authService.secretKey}\nExpiração Access Token: ${authService.accessTokenExpireMinutes} minutos\nExpiração Refresh Token: ${authService.refreshTokenExpireDays} dias\n\n⚠️ Tokens antigos podem não funcionar com a nova configuração.`,
+                    'success'
+                );
+
+                // Limpar dados salvos
+                testData = { lastHash: '', lastTokens: {} };
+
+            } catch (error) {
+                showResult('configResult', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // Inicializar com valores padrão
+        window.onload = function() {
+            showResult('configResult',
+                `🔧 Configuração inicial:\n\nSecret Key: ${authService.secretKey}\nExpiração Access Token: ${authService.accessTokenExpireMinutes} minutos\nExpiração Refresh Token: ${authService.refreshTokenExpireDays} dias`,
+                'info'
+            );
+        };
+    </script>
+</body>
+</html>

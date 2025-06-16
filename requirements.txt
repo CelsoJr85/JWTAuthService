@@ -1,0 +1,3 @@
+pyjwt[crypto]
+passlib[bcrypt]
+python-multipart

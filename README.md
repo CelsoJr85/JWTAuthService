@@ -291,10 +291,10 @@ python-multipart
 Incluímos uma interface web completa para testar todas as funcionalidades do JWT Auth Service:
 
 ### Primeira parte da interface:
-![Interface de Teste - Parte 1](https://github.com/CelsoJr85/jwt-auth-service/blob/main/screenshots/interface_part1.png)
+![Interface de Teste - Parte 1](https://github.com/CelsoJr85/JWTAuthService/blob/main/screenshots/interface_part1.png)
 
 ### Segunda parte da interface:
-![Interface de Teste - Parte 2](https://github.com/CelsoJr85/jwt-auth-service/blob/main/screenshots/interface_part2.png)
+![Interface de Teste - Parte 2](https://github.com/CelsoJr85/JWTAuthService/blob/main/screenshots/interface_part2.png)
 
 ### Como usar a interface:
 ```bash
@@ -338,7 +338,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 Se este projeto te ajudou, considere dar uma ⭐ no repositório!
 
-Para dúvidas ou problemas, abra uma [issue](https://github.com/CelsoJr85/jwt-auth-service/issues).
+Para dúvidas ou problemas, abra uma [issue](https://github.com/CelsoJr85/JWTAuthService/issues).
 
 ---
 
